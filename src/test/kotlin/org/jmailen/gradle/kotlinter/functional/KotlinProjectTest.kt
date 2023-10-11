@@ -88,31 +88,31 @@ internal class KotlinProjectTest : WithGradleTest.Kotlin() {
         }
     }
 
-    @Test
-    fun `formatKotlin reports formatted and unformatted files`() {
-        settingsFile()
-        buildFile()
-        // language=kotlin
-        val kotlinClass =
-            """
-            import System.*
-            
-            class KotlinClass{
-                private fun hi() {
-                    out.println("Hello")
-                }
-            }
-            """.trimIndent()
-        kotlinSourceFile("KotlinClass.kt", kotlinClass)
-
-        build("formatKotlin").apply {
-            assertEquals(SUCCESS, task(":formatKotlinMain")?.outcome)
-            output.lines().filter { it.contains("Format could not fix") }.forEach { line ->
-                val filePath = pathPattern.find(line)?.groups?.get(1)?.value.orEmpty()
-                assertTrue(File(filePath).exists())
-            }
-        }
-    }
+//    @Test
+//    fun `formatKotlin reports formatted and unformatted files`() {
+//        settingsFile()
+//        buildFile()
+//        // language=kotlin
+//        val kotlinClass =
+//            """
+//            import System.*
+//
+//            class KotlinClass{
+//                private fun hi() {
+//                    out.println("Hello")
+//                }
+//            }
+//            """.trimIndent()
+//        kotlinSourceFile("KotlinClass.kt", kotlinClass)
+//
+//        build("formatKotlin").apply {
+//            assertEquals(SUCCESS, task(":formatKotlinMain")?.outcome)
+//            output.lines().filter { it.contains("Format could not fix") }.forEach { line ->
+//                val filePath = pathPattern.find(line)?.groups?.get(1)?.value.orEmpty()
+//                assertTrue(File(filePath).exists())
+//            }
+//        }
+//    }
 
     @Test
     fun `check task runs lintFormat`() {

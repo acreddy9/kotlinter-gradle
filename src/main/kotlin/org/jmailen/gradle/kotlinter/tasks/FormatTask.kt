@@ -4,13 +4,17 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.InputChanges
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
+import org.jmailen.gradle.kotlinter.KotlinterExtension
 import org.jmailen.gradle.kotlinter.support.KotlinterError
+import org.jmailen.gradle.kotlinter.support.LintFailure
 import org.jmailen.gradle.kotlinter.tasks.format.FormatWorkerAction
 import javax.inject.Inject
 
@@ -22,6 +26,8 @@ open class FormatTask @Inject constructor(
     projectLayout = projectLayout,
     objectFactory = objectFactory,
 ) {
+    @Input
+    val ignoreFailures: Property<Boolean> = objectFactory.property(default = KotlinterExtension.DEFAULT_IGNORE_FAILURES)
 
     @OutputFile
     @Optional
@@ -47,6 +53,11 @@ open class FormatTask @Inject constructor(
         result.exceptionOrNull()?.workErrorCauses<KotlinterError>()?.ifNotEmpty {
             forEach { logger.error(it.message, it.cause) }
             throw GradleException("error formatting sources for $name")
+        }
+
+        val lintFailures = result.exceptionOrNull()?.workErrorCauses<LintFailure>() ?: emptyList()
+        if (lintFailures.isNotEmpty() && !ignoreFailures.get()) {
+            throw GradleException("$name sources failed lint check")
         }
     }
 }
